@@ -30,6 +30,24 @@ const sequelize = new Sequelize(
     }
 );
 
+// --- MODELOS ---
+
+const Author = sequelize.define('Author', {
+    name: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true
+    }
+});
+
+const Genre = sequelize.define('Genre', {
+    name: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true
+    }
+});
+
 // Definición del modelo Book
 const Book = sequelize.define('Book', {
     id: {
