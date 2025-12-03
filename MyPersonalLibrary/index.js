@@ -57,6 +57,10 @@ const Book = sequelize.define('Book', {
     coverUrl: {
         type: DataTypes.STRING,
         defaultValue: 'https://via.placeholder.com/150'
+    },
+    readCount: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0
     }
 });
 
@@ -66,7 +70,10 @@ const Book = sequelize.define('Book', {
 app.get('/', async (req, res) => {
     try {
         const books = await Book.findAll();
-        res.render('index', { books });
+        const pendingBooks = await Book.findAll({
+            where: { status: 'Pendiente' }
+        });
+        res.render('index', { books, pendingBooks });
     } catch (error) {
         console.error(error);
         res.status(500).send('Error al obtener los libros');
@@ -82,7 +89,7 @@ app.get('/create', (req, res) => {
 app.post('/create', async (req, res) => {
     try {
         await Book.create(req.body);
-        res.redirect('/');
+        res.redirect('/?alert=created');
     } catch (error) {
         console.error(error);
         res.status(500).send('Error al crear el libro');
@@ -109,7 +116,7 @@ app.put('/edit/:id', async (req, res) => {
         await Book.update(req.body, {
             where: { id: req.params.id }
         });
-        res.redirect('/');
+        res.redirect('/?alert=updated');
     } catch (error) {
         console.error(error);
         res.status(500).send('Error al actualizar el libro');
@@ -122,15 +129,66 @@ app.delete('/delete/:id', async (req, res) => {
         await Book.destroy({
             where: { id: req.params.id }
         });
-        res.redirect('/');
+        res.redirect('/?alert=deleted');
     } catch (error) {
         console.error(error);
         res.status(500).send('Error al eliminar el libro');
     }
 });
 
+// 7. Vista de Estadísticas Avanzadas
+app.get('/stats', async (req, res) => {
+    try {
+        const { genre, author } = req.query;
+        
+        // Construcción dinámica del filtro
+        const whereClause = {};
+        if (genre && genre.trim() !== '') whereClause.genre = genre;
+        if (author && author.trim() !== '') whereClause.author = author;
+
+        // Obtener total de libros filtrados
+        const totalBooks = await Book.count({ where: whereClause });
+
+        // Obtener conteo por estado
+        const statusCounts = await Book.findAll({
+            where: whereClause,
+            attributes: ['status', [Sequelize.fn('COUNT', Sequelize.col('status')), 'count']],
+            group: ['status']
+        });
+
+        // Procesar datos para la vista
+        const statsByStatus = statusCounts.map(item => {
+            const count = item.get('count');
+            const percentage = totalBooks > 0 ? ((count / totalBooks) * 100).toFixed(1) : 0;
+            return {
+                status: item.status,
+                count: count,
+                percentage: percentage
+            };
+        });
+
+        // Asegurar que todos los estados estén presentes aunque sean 0
+        const allStatuses = ['Leído', 'Pendiente', 'Leyendo'];
+        const finalStats = allStatuses.map(status => {
+            const found = statsByStatus.find(s => s.status === status);
+            return found || { status: status, count: 0, percentage: 0 };
+        });
+
+        res.render('stats', {
+            totalBooks,
+            stats: finalStats,
+            filterApplied: { genre, author }
+        });
+
+    } catch (error) {
+        console.error('Error en el módulo de estadísticas:', error);
+        res.status(500).send('Error interno al procesar las estadísticas');
+    }
+});
+
 // --- INICIO DEL SERVIDOR ---
-sequelize.sync({ force: false })
+// Usamos alter: true para actualizar la tabla con el nuevo campo readCount sin borrar datos
+sequelize.sync({ alter: true })
     .then(() => {
         console.log('Base de datos sincronizada');
         app.listen(PORT, () => {

@@ -12,13 +12,14 @@ CREATE TABLE IF NOT EXISTS Books (
     genre VARCHAR(255),
     status ENUM('Leído', 'Pendiente', 'Leyendo') DEFAULT 'Pendiente',
     coverUrl VARCHAR(255) DEFAULT 'https://via.placeholder.com/150',
+    readCount INT DEFAULT 0,
     createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- 4. Insertar datos de prueba (Seeders)
-INSERT INTO Books (title, author, genre, status, coverUrl, createdAt, updatedAt) VALUES 
-('Cien años de soledad', 'Gabriel García Márquez', 'Realismo Mágico', 'Leído', 'https://images.cdn3.buscalibre.com/fit-in/360x360/61/8d/618d227e8967274cd9589a549adff52d.jpg', NOW(), NOW()),
-('El Principito', 'Antoine de Saint-Exupéry', 'Fábula', 'Leído', 'https://images.cdn1.buscalibre.com/fit-in/360x360/56/04/5604a6c99307aa8616a9f566be602084.jpg', NOW(), NOW()),
-('1984', 'George Orwell', 'Ciencia Ficción', 'Pendiente', 'https://images.cdn2.buscalibre.com/fit-in/360x360/c6/2f/c62f9c6336359531b973081b269a30c3.jpg', NOW(), NOW()),
-('Hábitos Atómicos', 'James Clear', 'Autoayuda', 'Leyendo', 'https://images.cdn1.buscalibre.com/fit-in/360x360/b8/96/b8965652040a639785d987a991d56321.jpg', NOW(), NOW());
+INSERT INTO Books (title, author, genre, status, coverUrl, readCount, createdAt, updatedAt) VALUES
+('Cien años de soledad', 'Gabriel García Márquez', 'Realismo Mágico', 'Leído', 'https://images.cdn3.buscalibre.com/fit-in/360x360/61/8d/618d227e8967274cd9589a549adff52d.jpg', 150, NOW(), NOW()),
+('El Principito', 'Antoine de Saint-Exupéry', 'Fábula', 'Leído', 'https://images.cdn1.buscalibre.com/fit-in/360x360/56/04/5604a6c99307aa8616a9f566be602084.jpg', 300, NOW(), NOW()),
+('1984', 'George Orwell', 'Ciencia Ficción', 'Pendiente', 'https://images.cdn2.buscalibre.com/fit-in/360x360/c6/2f/c62f9c6336359531b973081b269a30c3.jpg', 0, NOW(), NOW()),
+('Hábitos Atómicos', 'James Clear', 'Autoayuda', 'Leyendo', 'https://images.cdn1.buscalibre.com/fit-in/360x360/b8/96/b8965652040a639785d987a991d56321.jpg', 45, NOW(), NOW());

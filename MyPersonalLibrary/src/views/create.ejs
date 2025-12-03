@@ -7,7 +7,7 @@
                 <h4 class="mb-0"><i class="fas fa-plus-circle me-2"></i>Agregar Nuevo Libro</h4>
             </div>
             <div class="card-body">
-                <form action="/create" method="POST">
+                <form action="/create" method="POST" id="createForm">
                     <div class="mb-3">
                         <label for="title" class="form-label">Título del Libro</label>
                         <input type="text" class="form-control" id="title" name="title" required>
@@ -44,5 +44,27 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.getElementById('createForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const form = this;
+        
+        Swal.fire({
+            title: '¿Guardar libro?',
+            text: "Se agregará un nuevo libro a tu colección",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#198754',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Sí, guardar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                form.submit();
+            }
+        });
+    });
+</script>
 
 <%- include('partials/footer') %>
