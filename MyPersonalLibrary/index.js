@@ -31,8 +31,24 @@ const sequelize = new Sequelize(
     }
 );
 
-// --- MODELO (Book) ---
-// Definición del modelo aquí mismo
+// --- MODELOS ---
+
+const Author = sequelize.define('Author', {
+    name: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true
+    }
+});
+
+const Genre = sequelize.define('Genre', {
+    name: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true
+    }
+});
+
 const Book = sequelize.define('Book', {
     id: {
         type: DataTypes.INTEGER,
@@ -42,13 +58,6 @@ const Book = sequelize.define('Book', {
     title: {
         type: DataTypes.STRING,
         allowNull: false
-    },
-    author: {
-        type: DataTypes.STRING,
-        allowNull: false
-    },
-    genre: {
-        type: DataTypes.STRING
     },
     status: {
         type: DataTypes.ENUM('Leído', 'Pendiente', 'Leyendo'),
@@ -64,14 +73,21 @@ const Book = sequelize.define('Book', {
     }
 });
 
+// Relaciones
+Author.hasMany(Book);
+Book.belongsTo(Author);
+Genre.hasMany(Book);
+Book.belongsTo(Genre);
+
 // --- RUTAS ---
 
 // 1. Listar todos los libros (Home)
 app.get('/', async (req, res) => {
     try {
-        const books = await Book.findAll();
+        const books = await Book.findAll({ include: [Author, Genre] });
         const pendingBooks = await Book.findAll({
-            where: { status: 'Pendiente' }
+            where: { status: 'Pendiente' },
+            include: [Author, Genre]
         });
         res.render('index', { books, pendingBooks });
     } catch (error) {
@@ -88,7 +104,27 @@ app.get('/create', (req, res) => {
 // 3. Crear un nuevo libro (POST)
 app.post('/create', async (req, res) => {
     try {
-        await Book.create(req.body);
+        const { title, author, genre, status, coverUrl } = req.body;
+
+        const [authorInstance] = await Author.findOrCreate({
+            where: { name: author }
+        });
+
+        let genreInstance = null;
+        if (genre) {
+            [genreInstance] = await Genre.findOrCreate({
+                where: { name: genre }
+            });
+        }
+
+        await Book.create({
+            title,
+            status,
+            coverUrl,
+            AuthorId: authorInstance.id,
+            GenreId: genreInstance ? genreInstance.id : null
+        });
+
         res.redirect('/?alert=created');
     } catch (error) {
         console.error(error);
@@ -99,7 +135,7 @@ app.post('/create', async (req, res) => {
 // 4. Mostrar formulario de edición
 app.get('/edit/:id', async (req, res) => {
     try {
-        const book = await Book.findByPk(req.params.id);
+        const book = await Book.findByPk(req.params.id, { include: [Author, Genre] });
         if (!book) {
             return res.status(404).send('Libro no encontrado');
         }
@@ -113,7 +149,26 @@ app.get('/edit/:id', async (req, res) => {
 // 5. Actualizar un libro (PUT)
 app.put('/edit/:id', async (req, res) => {
     try {
-        await Book.update(req.body, {
+        const { title, author, genre, status, coverUrl } = req.body;
+
+        const [authorInstance] = await Author.findOrCreate({
+            where: { name: author }
+        });
+
+        let genreInstance = null;
+        if (genre) {
+            [genreInstance] = await Genre.findOrCreate({
+                where: { name: genre }
+            });
+        }
+
+        await Book.update({
+            title,
+            status,
+            coverUrl,
+            AuthorId: authorInstance.id,
+            GenreId: genreInstance ? genreInstance.id : null
+        }, {
             where: { id: req.params.id }
         });
         res.redirect('/?alert=updated');
@@ -141,18 +196,21 @@ app.get('/stats', async (req, res) => {
     try {
         const { genre, author } = req.query;
         
-        // Construcción dinámica del filtro
-        const whereClause = {};
-        if (genre && genre.trim() !== '') whereClause.genre = genre;
-        if (author && author.trim() !== '') whereClause.author = author;
+        const include = [];
+        if (author && author.trim() !== '') {
+            include.push({ model: Author, where: { name: author } });
+        }
+        if (genre && genre.trim() !== '') {
+            include.push({ model: Genre, where: { name: genre } });
+        }
 
         // Obtener total de libros filtrados
-        const totalBooks = await Book.count({ where: whereClause });
+        const totalBooks = await Book.count({ include });
 
         // Obtener conteo por estado
         const statusCounts = await Book.findAll({
-            where: whereClause,
-            attributes: ['status', [Sequelize.fn('COUNT', Sequelize.col('status')), 'count']],
+            include,
+            attributes: ['status', [Sequelize.fn('COUNT', Sequelize.col('Book.status')), 'count']],
             group: ['status']
         });
 
