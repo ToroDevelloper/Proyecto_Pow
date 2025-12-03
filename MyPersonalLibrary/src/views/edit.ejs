@@ -1,0 +1,47 @@
+<%- include('partials/header') %>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-edit me-2"></i>Editar Libro</h4>
+            </div>
+            <div class="card-body">
+                <form action="/edit/<%= book.id %>?_method=PUT" method="POST">
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Título del Libro</label>
+                        <input type="text" class="form-control" id="title" name="title" value="<%= book.title %>" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="author" class="form-label">Autor</label>
+                        <input type="text" class="form-control" id="author" name="author" value="<%= book.author %>" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="genre" class="form-label">Género</label>
+                            <input type="text" class="form-control" id="genre" name="genre" value="<%= book.genre %>">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="status" class="form-label">Estado</label>
+                            <select class="form-select" id="status" name="status">
+                                <option value="Pendiente" <%= book.status === 'Pendiente' ? 'selected' : '' %>>Pendiente</option>
+                                <option value="Leyendo" <%= book.status === 'Leyendo' ? 'selected' : '' %>>Leyendo</option>
+                                <option value="Leído" <%= book.status === 'Leído' ? 'selected' : '' %>>Leído</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="coverUrl" class="form-label">URL de la Portada (Imagen)</label>
+                        <input type="url" class="form-control" id="coverUrl" name="coverUrl" value="<%= book.coverUrl %>">
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">Actualizar Libro</button>
+                        <a href="/" class="btn btn-secondary">Cancelar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('partials/footer') %>

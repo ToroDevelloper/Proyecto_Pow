@@ -1,0 +1,51 @@
+<%- include('partials/header') %>
+
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1><i class="fas fa-book me-2"></i>Mi Colección</h1>
+        <p class="text-muted">Gestiona tus lecturas de forma sencilla.</p>
+    </div>
+    <div class="col-md-4 text-end">
+        <a href="/create" class="btn btn-success"><i class="fas fa-plus me-1"></i>Agregar Libro</a>
+    </div>
+</div>
+
+<% if (books.length === 0) { %>
+    <div class="alert alert-info text-center">
+        <h4>¡Tu biblioteca está vacía!</h4>
+        <p>Empieza agregando tu primer libro.</p>
+        <a href="/create" class="btn btn-primary mt-2">Agregar ahora</a>
+    </div>
+<% } else { %>
+    <div class="row">
+        <% books.forEach(book => { %>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <img src="<%= book.coverUrl %>" class="card-img-top" alt="<%= book.title %>" style="height: 200px; object-fit: cover;">
+                    <div class="card-body">
+                        <h5 class="card-title"><%= book.title %></h5>
+                        <h6 class="card-subtitle mb-2 text-muted"><%= book.author %></h6>
+                        <p class="card-text">
+                            <span class="badge bg-secondary"><%= book.genre %></span>
+                            <% if(book.status === 'Leído') { %>
+                                <span class="badge bg-success">Leído</span>
+                            <% } else if(book.status === 'Leyendo') { %>
+                                <span class="badge bg-warning text-dark">Leyendo</span>
+                            <% } else { %>
+                                <span class="badge bg-info text-dark">Pendiente</span>
+                            <% } %>
+                        </p>
+                    </div>
+                    <div class="card-footer bg-white border-top-0 d-flex justify-content-between">
+                        <a href="/edit/<%= book.id %>" class="btn btn-outline-primary btn-sm"><i class="fas fa-edit"></i> Editar</a>
+                        <form action="/delete/<%= book.id %>?_method=DELETE" method="POST" class="d-inline delete-form">
+                            <button type="submit" class="btn btn-outline-danger btn-sm"><i class="fas fa-trash"></i> Borrar</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        <% }) %>
+    </div>
+<% } %>
+
+<%- include('partials/footer') %>
