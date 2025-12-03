@@ -1,0 +1,77 @@
+/* Estilos generales */
+body {
+    background-color: #f8f9fa;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Estilos para las tarjetas de libros */
+.card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: none;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.15) !important;
+}
+
+/* Ajuste de imágenes de portada */
+.card-img-wrapper {
+    height: 250px; /* Altura reducida para tarjetas más pequeñas */
+    overflow: hidden;
+    position: relative;
+}
+
+.card-img-top {
+    height: 100% !important;
+    width: 100%;
+    object-fit: cover; /* Cubrir el área sin deformar */
+    object-position: center top; /* Centrar la imagen priorizando la parte superior */
+    border-bottom: 1px solid #eee;
+    transition: transform 0.5s ease;
+}
+
+.card:hover .card-img-top {
+    transform: scale(1.05);
+}
+
+/* Estilos para el carrusel */
+.carousel-item img {
+    height: 300px !important;
+    width: auto;
+    max-width: 200px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.carousel-inner {
+    padding: 20px 0;
+}
+
+/* Badges y etiquetas */
+.badge {
+    font-weight: 500;
+    padding: 0.5em 0.8em;
+}
+
+/* Botones de acción en las tarjetas */
+.card-footer {
+    background-color: transparent;
+    border-top: 1px solid #f1f1f1;
+    padding: 1rem;
+}
+
+/* Títulos y textos */
+.card-title {
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 0.2rem;
+    font-size: 1rem;
+}
+
+.card-subtitle {
+    font-size: 0.85rem;
+    color: #6c757d;
+    margin-bottom: 0.5rem;
+}

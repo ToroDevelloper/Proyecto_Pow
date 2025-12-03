@@ -1,0 +1,70 @@
+<%- include('partials/encabezado') %>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0"><i class="fas fa-plus-circle me-2"></i>Agregar Nuevo Libro</h4>
+            </div>
+            <div class="card-body">
+                <form action="/crear" method="POST" id="createForm">
+                    <div class="mb-3">
+                        <label for="titulo" class="form-label">Título del Libro</label>
+                        <input type="text" class="form-control" id="titulo" name="titulo" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="autor" class="form-label">Autor</label>
+                        <input type="text" class="form-control" id="autor" name="autor" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="genero" class="form-label">Género</label>
+                            <input type="text" class="form-control" id="genero" name="genero">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="estado" class="form-label">Estado</label>
+                            <select class="form-select" id="estado" name="estado">
+                                <option value="Pendiente">Pendiente</option>
+                                <option value="Leyendo">Leyendo</option>
+                                <option value="Leído">Leído</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="urlPortada" class="form-label">URL de la Portada (Imagen)</label>
+                        <input type="url" class="form-control" id="urlPortada" name="urlPortada" placeholder="https://ejemplo.com/imagen.jpg">
+                        <div class="form-text">Deja en blanco para usar una imagen por defecto.</div>
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success btn-lg">Guardar Libro</button>
+                        <a href="/" class="btn btn-secondary">Cancelar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('createForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const form = this;
+        
+        Swal.fire({
+            title: '¿Guardar libro?',
+            text: "Se agregará un nuevo libro a tu colección",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#198754',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Sí, guardar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                form.submit();
+            }
+        });
+    });
+</script>
+
+<%- include('partials/pie') %>
