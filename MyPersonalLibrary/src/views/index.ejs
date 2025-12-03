@@ -38,7 +38,7 @@
                     </div>
                     <div class="card-footer bg-white border-top-0 d-flex justify-content-between">
                         <a href="/edit/<%= book.id %>" class="btn btn-outline-primary btn-sm"><i class="fas fa-edit"></i> Editar</a>
-                        <form action="/delete/<%= book.id %>?_method=DELETE" method="POST" class="d-inline delete-form">
+                        <form action="/delete/<%= book.id %>" method="POST" class="d-inline delete-form">
                             <button type="submit" class="btn btn-outline-danger btn-sm"><i class="fas fa-trash"></i> Borrar</button>
                         </form>
                     </div>
