@@ -19,7 +19,6 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'src/views'));
 
 // --- BASE DE DATOS (Sequelize) ---
-// Conexión directa aquí mismo
 const sequelize = new Sequelize(
     process.env.DB_NAME,
     process.env.DB_USER,
@@ -31,24 +30,7 @@ const sequelize = new Sequelize(
     }
 );
 
-// --- MODELOS ---
-
-const Author = sequelize.define('Author', {
-    name: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        unique: true
-    }
-});
-
-const Genre = sequelize.define('Genre', {
-    name: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        unique: true
-    }
-});
-
+// Definición del modelo Book
 const Book = sequelize.define('Book', {
     id: {
         type: DataTypes.INTEGER,
@@ -245,7 +227,6 @@ app.get('/stats', async (req, res) => {
 });
 
 // --- INICIO DEL SERVIDOR ---
-// Usamos alter: true para actualizar la tabla con el nuevo campo readCount sin borrar datos
 sequelize.sync({ alter: true })
     .then(() => {
         console.log('Base de datos sincronizada');
