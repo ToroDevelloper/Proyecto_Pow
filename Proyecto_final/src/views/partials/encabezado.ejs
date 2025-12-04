@@ -12,19 +12,46 @@
     <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
-        <div class="container">
-            <a class="navbar-brand" href="/"><i class="fas fa-book-open me-2"></i>Mi Biblioteca Personal</a>
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-elegant mb-0">
+        <div class="container-fluid navbar-container">
+            <!-- Logo y Brand -->
+            <div class="navbar-left">
+                <a class="navbar-brand navbar-brand-elegant" href="/">
+                    <i class="fas fa-book-open me-2"></i><span class="brand-text">Mi Biblioteca</span>
+                </a>
+            </div>
+            
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
+            
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
+                <!-- Buscador en el centro -->
+                <div class="navbar-search mx-auto">
+                    <div class="search-wrapper">
+                        <input class="form-control search-input" id="searchBooks" type="search" placeholder="Buscar por título, autor o género..." aria-label="Buscar">
+                        <button class="btn btn-search" type="button" id="searchBtn" title="Buscar">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Menú de navegación a la derecha -->
+                <ul class="navbar-nav navbar-nav-elegant ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="/"><i class="fas fa-home me-1"></i>Inicio</a>
+                        <a class="nav-link nav-link-elegant" href="/">
+                            <i class="fas fa-home nav-icon"></i><span class="nav-text">Inicio</span>
+                        </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/crear"><i class="fas fa-plus-circle me-1"></i>Nuevo Libro</a>
+                        <a class="nav-link nav-link-elegant" href="/crear">
+                            <i class="fas fa-plus-circle nav-icon"></i><span class="nav-text">Nuevo Libro</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-elegant" href="/estadisticas">
+                            <i class="fas fa-chart-bar nav-icon"></i><span class="nav-text">Estadísticas</span>
+                        </a>
                     </li>
                 </ul>
             </div>

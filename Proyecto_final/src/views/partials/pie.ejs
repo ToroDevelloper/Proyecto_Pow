@@ -12,5 +12,74 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Custom JS -->
     <script src="/js/scripts.js"></script>
+    
+    <script>
+        // Funcionalidad de búsqueda en el navbar
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('searchBooks');
+            const searchBtn = document.getElementById('searchBtn');
+            
+            if (searchInput && searchBtn) {
+                function performSearch() {
+                    const searchTerm = searchInput.value.toLowerCase().trim();
+                    
+                    if (!searchTerm) {
+                        alert('Por favor ingresa un término de búsqueda');
+                        return;
+                    }
+                    
+                    // Obtener todas las tarjetas de libros
+                    const bookCards = document.querySelectorAll('.book-card');
+                    let foundBooks = [];
+                    
+                    bookCards.forEach(card => {
+                        const title = card.querySelector('.card-title')?.textContent.toLowerCase() || '';
+                        const author = card.querySelector('.card-subtitle')?.textContent.toLowerCase() || '';
+                        const genre = card.querySelector('.badge')?.textContent.toLowerCase() || '';
+                        
+                        if (title.includes(searchTerm) || author.includes(searchTerm) || genre.includes(searchTerm)) {
+                            card.style.display = 'block';
+                            foundBooks.push(title);
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+                    
+                    if (foundBooks.length === 0) {
+                        Swal.fire({
+                            title: 'Sin resultados',
+                            text: `No se encontraron libros que coincidan con "${searchTerm}"`,
+                            icon: 'info'
+                        });
+                    } else {
+                        Swal.fire({
+                            title: '¡Búsqueda completada!',
+                            text: `Se encontraron ${foundBooks.length} libro(s)`,
+                            icon: 'success',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    }
+                }
+                
+                searchBtn.addEventListener('click', performSearch);
+                searchInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        performSearch();
+                    }
+                });
+                
+                // Botón para limpiar búsqueda (mostrar todos)
+                searchInput.addEventListener('input', function() {
+                    if (this.value === '') {
+                        const bookCards = document.querySelectorAll('.book-card');
+                        bookCards.forEach(card => {
+                            card.style.display = 'block';
+                        });
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>

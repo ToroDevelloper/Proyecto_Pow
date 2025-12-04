@@ -1,45 +1,55 @@
 <%- include('partials/encabezado') %>
 
-<div class="row mb-4">
-    <div class="col-md-8">
-        <h1><i class="fas fa-book me-2"></i>Mi Colección</h1>
-        <p class="text-muted">Gestiona tus lecturas de forma sencilla.</p>
-    </div>
-    <div class="col-md-4 text-end">
-        <a href="/estadisticas" class="btn btn-info text-white me-2"><i class="fas fa-chart-bar me-1"></i>Estadísticas</a>
-        <a href="/crear" class="btn btn-success"><i class="fas fa-plus me-1"></i>Agregar Libro</a>
+<!-- Encabezado principal elegante -->
+<div class="header-section mb-5">
+    <div class="row align-items-center">
+        <div class="col">
+            <h1 class="header-title"><i class="fas fa-book me-3"></i>Mi Colección</h1>
+            <p class="header-subtitle">Explora y gestiona tu biblioteca personal</p>
+        </div>
     </div>
 </div>
 
 <!-- Carrusel de Libros Pendientes -->
 <% if (librosPendientes && librosPendientes.length > 0) { %>
-<div class="card mb-4 shadow-sm">
-    <div class="card-header bg-warning text-dark">
-        <h5 class="mb-0"><i class="fas fa-hourglass-half me-2"></i>Lecturas Pendientes</h5>
+<div class="card card-featured mb-5 shadow">
+    <div class="card-header card-header-featured">
+        <div class="d-flex align-items-center">
+            <div class="featured-icon me-3">
+                <i class="fas fa-hourglass-half"></i>
+            </div>
+            <div>
+                <h5 class="mb-0">Lecturas Pendientes</h5>
+                <small class="text-light-secondary">Continúa donde lo dejaste</small>
+            </div>
+        </div>
     </div>
-    <div class="card-body">
+    <div class="card-body carousel-section">
         <div id="pendingBooksCarousel" class="carousel slide" data-bs-ride="carousel">
             <div class="carousel-inner">
                 <% librosPendientes.forEach((libro, index) => { %>
                     <div class="carousel-item <%= index === 0 ? 'active' : '' %>">
-                        <div class="d-flex justify-content-center align-items-center">
-                            <img src="<%= libro.urlPortada %>" class="d-block me-4" alt="<%= libro.titulo %>" style="height: 200px; object-fit: cover; border-radius: 5px;">
-                            <div>
-                                <h5><%= libro.titulo %></h5>
-                                <p class="text-muted"><%= libro.Autor ? libro.Autor.nombre : 'Desconocido' %></p>
-                                <span class="badge bg-secondary"><%= libro.Genero ? libro.Genero.nombre : 'Sin género' %></span>
+                        <div class="d-flex justify-content-center align-items-center gap-4">
+                            <img src="<%= libro.urlPortada %>" class="carousel-book-img" alt="<%= libro.titulo %>" style="height: 280px; object-fit: cover; border-radius: 12px; box-shadow: 0 8px 24px rgba(52, 152, 219, 0.15);">
+                            <div class="carousel-book-info">
+                                <h4 class="carousel-title"><%= libro.titulo %></h4>
+                                <p class="carousel-author"><strong><%= libro.Autor ? libro.Autor.nombre : 'Desconocido' %></strong></p>
+                                <p class="carousel-genre"><i class="fas fa-tag me-2"></i><%= libro.Genero ? libro.Genero.nombre : 'Sin género' %></p>
+                                <div class="mt-4">
+                                    <a href="/editar/<%= libro.id %>" class="btn btn-elegant me-2"><i class="fas fa-edit me-2"></i>Ver detalles</a>
+                                </div>
                             </div>
                         </div>
                     </div>
                 <% }) %>
             </div>
             <% if (librosPendientes.length > 1) { %>
-                <button class="carousel-control-prev" type="button" data-bs-target="#pendingBooksCarousel" data-bs-slide="prev">
-                    <span class="carousel-control-prev-icon bg-dark rounded-circle" aria-hidden="true"></span>
+                <button class="carousel-control-prev carousel-control-custom" type="button" data-bs-target="#pendingBooksCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                     <span class="visually-hidden">Anterior</span>
                 </button>
-                <button class="carousel-control-next" type="button" data-bs-target="#pendingBooksCarousel" data-bs-slide="next">
-                    <span class="carousel-control-next-icon bg-dark rounded-circle" aria-hidden="true"></span>
+                <button class="carousel-control-next carousel-control-custom" type="button" data-bs-target="#pendingBooksCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
                     <span class="visually-hidden">Siguiente</span>
                 </button>
             <% } %>
@@ -48,41 +58,58 @@
 </div>
 <% } %>
 
+<!-- Sección de libros -->
 <% if (libros.length === 0) { %>
-    <div class="alert alert-info text-center">
-        <h4>¡Tu biblioteca está vacía!</h4>
-        <p>Empieza agregando tu primer libro.</p>
-        <a href="/crear" class="btn btn-primary mt-2">Agregar ahora</a>
+    <div class="empty-state-container">
+        <div class="empty-state">
+            <i class="fas fa-books"></i>
+            <h3>Tu biblioteca está vacía</h3>
+            <p>Comienza tu viaje literario agregando tu primer libro</p>
+            <a href="/crear" class="btn btn-primary-elegant mt-4">
+                <i class="fas fa-plus me-2"></i>Agregar mi primer libro
+            </a>
+        </div>
     </div>
 <% } else { %>
-    <div class="row row-cols-2 row-cols-md-3 row-cols-lg-5 g-3">
+    <div class="library-header mb-4">
+        <h6 class="library-title">
+            <i class="fas fa-list me-2"></i>Todos los libros
+            <span class="badge badge-count"><%= libros.length %></span>
+        </h6>
+    </div>
+    
+    <div class="row row-cols-2 row-cols-md-3 row-cols-lg-5 g-4">
         <% libros.forEach(libro => { %>
             <div class="col">
-                <div class="card h-100 shadow-sm book-card">
+                <div class="card h-100 shadow-sm book-card book-card-elegant">
                     <div class="card-img-wrapper">
                         <img src="<%= libro.urlPortada %>" class="card-img-top" alt="<%= libro.titulo %>">
-                    </div>
-                    <div class="card-body p-2">
-                        <h6 class="card-title text-truncate" title="<%= libro.titulo %>"><%= libro.titulo %></h6>
-                        <p class="card-subtitle mb-2 text-muted small text-truncate"><%= libro.Autor ? libro.Autor.nombre : 'Desconocido' %></p>
-                        <div class="mb-2">
-                            <span class="badge bg-secondary" style="font-size: 0.7rem;"><%= libro.Genero ? libro.Genero.nombre : 'Sin género' %></span>
+                        <div class="card-img-overlay d-flex align-items-end">
+                            <div class="book-actions w-100">
+                                <a href="/editar/<%= libro.id %>" class="btn btn-icon-elegant me-2" title="Editar"><i class="fas fa-edit"></i></a>
+                                <form action="/eliminar/<%= libro.id %>?_method=DELETE" method="POST" class="d-inline delete-form" onsubmit="return confirmDelete(event, this);">
+                                    <button type="submit" class="btn btn-icon-danger" title="Eliminar"><i class="fas fa-trash"></i></button>
+                                </form>
+                            </div>
                         </div>
-                        <div class="mb-2">
+                    </div>
+                    <div class="card-body p-3">
+                        <h6 class="card-title text-truncate" title="<%= libro.titulo %>"><%= libro.titulo %></h6>
+                        <p class="card-subtitle mb-3 text-muted text-truncate small"><%= libro.Autor ? libro.Autor.nombre : 'Desconocido' %></p>
+                        
+                        <div class="mb-3">
+                            <span class="badge badge-genre"><%= libro.Genero ? libro.Genero.nombre : 'Sin género' %></span>
+                        </div>
+                        
+                        <div>
                             <% if(libro.estado === 'Leído') { %>
-                                <span class="badge bg-success w-100">Leído</span>
+                                <span class="badge badge-estado badge-leido w-100"><i class="fas fa-check me-1"></i>Leído</span>
                             <% } else if(libro.estado === 'Leyendo') { %>
-                                <span class="badge bg-warning text-dark w-100">Leyendo</span>
+                                <span class="badge badge-estado badge-leyendo w-100"><i class="fas fa-book-open me-1"></i>Leyendo</span>
                             <% } else { %>
-                                <span class="badge bg-info text-dark w-100">Pendiente</span>
+                                <span class="badge badge-estado badge-pendiente w-100"><i class="fas fa-clock me-1"></i>Pendiente</span>
                             <% } %>
                         </div>
-                    </div>
-                    <div class="card-footer bg-white border-top-0 d-flex justify-content-between p-2">
-                        <a href="/editar/<%= libro.id %>" class="btn btn-outline-primary btn-sm py-0 px-1" style="font-size: 0.8rem;"><i class="fas fa-edit"></i></a>
-                        <form action="/eliminar/<%= libro.id %>?_method=DELETE" method="POST" class="d-inline delete-form" onsubmit="return confirmDelete(event, this);">
-                            <button type="submit" class="btn btn-outline-danger btn-sm py-0 px-1" style="font-size: 0.8rem;"><i class="fas fa-trash"></i></button>
-                        </form>
                     </div>
                 </div>
             </div>
@@ -101,8 +128,8 @@
             text: "No podrás revertir esta acción",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
+            confirmButtonColor: '#e74c3c',
+            cancelButtonColor: '#3498db',
             confirmButtonText: 'Sí, borrar',
             cancelButtonText: 'Cancelar'
         }).then((result) => {
@@ -113,7 +140,6 @@
     }
 
     // Detectar parámetros de URL para mostrar alertas de éxito
-    // Se ejecuta después de que el footer (que contiene SweetAlert2) se haya cargado
     document.addEventListener('DOMContentLoaded', function() {
         const urlParams = new URLSearchParams(window.location.search);
         const alertType = urlParams.get('alerta');
