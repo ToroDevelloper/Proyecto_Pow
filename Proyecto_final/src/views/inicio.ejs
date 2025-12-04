@@ -4,7 +4,7 @@
 <div class="header-section mb-5">
     <div class="row align-items-center">
         <div class="col">
-            <h1 class="header-title"><i class="fas fa-book me-3"></i>Mi Colección</h1>
+            <h1 class="header-title"><i class="fas fa-book me-3"></i>Mi Colección de libros</h1>
             <p class="header-subtitle">Explora y gestiona tu biblioteca personal</p>
         </div>
     </div>
@@ -25,19 +25,25 @@
         </div>
     </div>
     <div class="card-body carousel-section">
-        <div id="pendingBooksCarousel" class="carousel slide" data-bs-ride="carousel">
+        <div id="pendingBooksCarousel" class="carousel slide carousel-enhanced" data-bs-ride="carousel">
             <div class="carousel-inner">
                 <% librosPendientes.forEach((libro, index) => { %>
                     <div class="carousel-item <%= index === 0 ? 'active' : '' %>">
-                        <div class="d-flex justify-content-center align-items-center gap-4">
-                            <img src="<%= libro.urlPortada %>" class="carousel-book-img" alt="<%= libro.titulo %>" style="height: 280px; object-fit: cover; border-radius: 12px; box-shadow: 0 8px 24px rgba(52, 152, 219, 0.15);">
-                            <div class="carousel-book-info">
-                                <h4 class="carousel-title"><%= libro.titulo %></h4>
-                                <p class="carousel-author"><strong><%= libro.Autor ? libro.Autor.nombre : 'Desconocido' %></strong></p>
-                                <p class="carousel-genre"><i class="fas fa-tag me-2"></i><%= libro.Genero ? libro.Genero.nombre : 'Sin género' %></p>
-                                <div class="mt-4">
-                                    <a href="/editar/<%= libro.id %>" class="btn btn-elegant me-2"><i class="fas fa-edit me-2"></i>Ver detalles</a>
+                        <div class="carousel-content">
+                            <div class="carousel-image">
+                                <img src="<%= libro.urlPortada %>" class="carousel-book-img" alt="<%= libro.titulo %>" style="height: 320px; object-fit: cover; border-radius: 12px; box-shadow: 0 10px 35px rgba(52, 152, 219, 0.25);">
+                            </div>
+                            <div class="carousel-details">
+                                <div class="carousel-badge">
+                                    <span class="badge badge-pendiente"><i class="fas fa-star me-1"></i>Pendiente de leer</span>
                                 </div>
+                                <h3 class="carousel-title"><%= libro.titulo %></h3>
+                                <p class="carousel-author">
+                                    <i class="fas fa-user me-2"></i><strong><%= libro.Autor ? libro.Autor.nombre : 'Autor Desconocido' %></strong>
+                                </p>
+                                <p class="carousel-genre">
+                                    <i class="fas fa-book me-2"></i><%= libro.Genero ? libro.Genero.nombre : 'Sin género' %>
+                                </p>
                             </div>
                         </div>
                     </div>

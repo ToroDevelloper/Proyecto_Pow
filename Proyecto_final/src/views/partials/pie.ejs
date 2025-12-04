@@ -37,11 +37,23 @@
                         const author = card.querySelector('.card-subtitle')?.textContent.toLowerCase() || '';
                         const genre = card.querySelector('.badge')?.textContent.toLowerCase() || '';
                         
-                        if (title.includes(searchTerm) || author.includes(searchTerm) || genre.includes(searchTerm)) {
-                            card.style.display = 'block';
+                        let matchType = 0;
+                        
+                        if (title.includes(searchTerm)) {
+                            matchType = 3;
                             foundBooks.push(title);
+                        } else if (author.includes(searchTerm)) {
+                            matchType = 2;
+                            foundBooks.push(title);
+                        } else if (genre.includes(searchTerm)) {
+                            matchType = 1;
+                            foundBooks.push(title);
+                        }
+                        
+                        if (matchType > 0) {
+                            card.parentElement.style.display = 'block';
                         } else {
-                            card.style.display = 'none';
+                            card.parentElement.style.display = 'none';
                         }
                     });
                     
@@ -69,12 +81,12 @@
                     }
                 });
                 
-                // Botón para limpiar búsqueda (mostrar todos)
+                // Limpiar búsqueda (mostrar todos)
                 searchInput.addEventListener('input', function() {
                     if (this.value === '') {
                         const bookCards = document.querySelectorAll('.book-card');
                         bookCards.forEach(card => {
-                            card.style.display = 'block';
+                            card.parentElement.style.display = 'block';
                         });
                     }
                 });
