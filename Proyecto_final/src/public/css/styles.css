@@ -258,8 +258,13 @@ body {
     border-radius: 12px;
     overflow: hidden;
     background-color: #ffffff;
-    border-left: 5px solid #3498db;
+    border-left: 5px solid #3498db; /* Azul por defecto */
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Borde verde específico para la tarjeta en la página de Crear */
+.page-crear .card {
+    border-left-color: #198754;
 }
 
 .card:hover {
@@ -342,10 +347,21 @@ body {
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
+/* Estilo por defecto para el foco (azul) */
 .form-control:focus, .form-select:focus {
     border-color: #3498db;
     box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
 }
+
+/* Estilo específico para la página de Crear (verde) */
+.page-crear .form-control:focus,
+.page-crear .form-select:focus {
+    border-color: #198754; /* Verde de Bootstrap Success */
+    box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.25);
+}
+
+/* El estilo para la página de editar ya está cubierto por el por defecto (azul),
+   pero podríamos añadirlo por claridad si quisiéramos. De momento no es necesario. */
 
 .form-label {
     color: #2c3e50;
@@ -522,18 +538,26 @@ body {
     height: 50px;
     top: 50%;
     transform: translateY(-50%);
-    background: linear-gradient(135deg, rgba(52, 152, 219, 0.1) 0%, rgba(41, 128, 185, 0.1) 100%);
+    background-color: rgba(255, 255, 255, 0.9); /* Fondo sólido blanco semi-transparente */
     border-radius: 50%;
     transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Sombra para resaltar */
+    z-index: 10; /* Asegura que esté por encima de otros elementos del carrusel */
 }
 
 .carousel-control-custom:hover {
-    background: linear-gradient(135deg, rgba(52, 152, 219, 0.3) 0%, rgba(41, 128, 185, 0.3) 100%);
+    background-color: #ffffff;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
 }
 
-.carousel-control-custom .carousel-control-prev-icon,
-.carousel-control-custom .carousel-control-next-icon {
-    filter: invert(1);
+.carousel-control-custom i {
+    color: #1a3d52;
+    font-size: 1.5rem;
+    transition: color 0.3s ease;
+}
+
+.carousel-control-custom:hover i {
+    color: #3498db;
 }
 
 /* Estado vacío elegante */
@@ -557,6 +581,13 @@ body {
     color: #3498db;
     margin-bottom: 1.5rem;
     opacity: 0.8;
+    display: block;
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
 }
 
 .empty-state h3 {
@@ -612,8 +643,29 @@ body {
 .library-header {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     padding: 1.5rem 0;
     border-bottom: 2px solid #e0f2f7;
+}
+
+.filter-icon-trigger {
+    color: #1a3d52;
+    text-decoration: none;
+    cursor: pointer;
+    transition: color 0.3s ease;
+    font-size: 1.3rem; /* Aumentar tamaño del icono */
+    vertical-align: middle;
+}
+
+.filter-icon-trigger:hover {
+    color: #3498db;
+}
+
+.library-title .dropdown-menu {
+    border-radius: 8px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    border: 1px solid #e0f2f7;
+    z-index: 1050; /* Asegura que esté por encima de otros elementos */
 }
 
 .library-title {
@@ -642,11 +694,16 @@ body {
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
     transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
     overflow: hidden;
+    position: relative; /* Necesario para posicionar el overlay */
 }
 
 .book-card-elegant:hover {
     transform: translateY(-8px);
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1) !important;
+}
+
+.book-details-trigger {
+    cursor: pointer;
 }
 
 .book-card-elegant .card-img-wrapper {
@@ -668,12 +725,22 @@ body {
 }
 
 .book-card-elegant .card-img-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 320px; /* Misma altura que .card-img-wrapper */
     background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0) 100%);
     opacity: 0;
     transition: opacity 0.3s ease;
     display: flex;
     align-items: flex-end;
     justify-content: center;
+    pointer-events: none; /* El overlay no captura clics */
+}
+
+.book-card-elegant .book-actions {
+    pointer-events: auto; /* Los botones sí capturan clics */
 }
 
 .book-card-elegant:hover .card-img-overlay {
@@ -764,7 +831,7 @@ body {
     text-transform: uppercase;
 }
 
-.badge-leido {
+.badge-leido, .badge-leído {
     background: linear-gradient(135deg, #27ae60 0%, #229954 100%) !important;
 }
 
@@ -921,4 +988,96 @@ body {
         min-height: auto;
         padding: 2rem 1rem;
     }
+}
+
+/* Estilos para el menú de filtrado */
+.filter-icon {
+    cursor: pointer;
+    font-size: 1.2rem;
+    transition: color 0.3s ease;
+}
+
+.filter-icon:hover {
+    color: #3498db;
+}
+
+#modalBookDescription {
+    white-space: pre-wrap;
+    margin-bottom: 1.5rem;
+    overflow-wrap: break-word; /* Para forzar el ajuste de palabras largas */
+}
+
+.modal-body strong {
+    display: block;
+    margin-bottom: 0.25rem;
+    color: #5a6c7d;
+}
+
+.modal-footer .btn-icon-elegant,
+.modal-footer .btn-icon-danger {
+    width: 48px;
+    height: 48px;
+    font-size: 1.2rem;
+}
+
+/* Estilos para el estado vacío de filtros */
+.empty-state-container-small {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 300px;
+    width: 100%;
+}
+
+.empty-state-small {
+    text-align: center;
+    padding: 2rem;
+    color: #7f8c8d;
+}
+
+.empty-state-small i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: #bdc3c7;
+}
+
+.empty-state-small h4 {
+    font-weight: 600;
+    color: #5a6c7d;
+}
+
+.filter-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    padding: 10px;
+    z-index: 10;
+    display: none; /* Ocultar por defecto */
+}
+
+.filter-menu ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.filter-menu li {
+    margin-bottom: 5px;
+}
+
+.filter-menu a {
+    display: block;
+    padding: 5px 10px;
+    color: #333;
+    text-decoration: none;
+    border-radius: 3px;
+    transition: background-color 0.3s ease;
+}
+
+.filter-menu a:hover {
+    background-color: #f0f0f0;
 }

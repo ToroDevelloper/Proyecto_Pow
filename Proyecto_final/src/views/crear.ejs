@@ -18,6 +18,15 @@
                         <label for="autor" class="form-label">Autor</label>
                         <input type="text" class="form-control" id="autor" name="autor" required>
                     </div>
+                    <div class="mb-3">
+                        <label for="fechaCreacion" class="form-label">Fecha de Creación del Autor</label>
+                        <input type="date" class="form-control" id="fechaCreacion" name="fechaCreacion">
+                    </div>
+                    <div class="mb-3">
+                        <label for="descripcion" class="form-label">Descripción</label>
+                        <textarea class="form-control" id="descripcion" name="descripcion" rows="4" maxlength="716"></textarea>
+                        <div id="contador" class="form-text text-end">0/716</div>
+                    </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="genero" class="form-label">Género</label>
@@ -48,23 +57,56 @@
 </div>
 
 <script>
-    document.getElementById('createForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const form = this;
-        
-        Swal.fire({
-            title: '¿Guardar libro?',
-            text: "Se agregará un nuevo libro a tu colección",
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonColor: '#198754',
-            cancelButtonColor: '#6c757d',
-            confirmButtonText: 'Sí, guardar',
-            cancelButtonText: 'Cancelar'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                form.submit();
+    document.addEventListener('DOMContentLoaded', function() {
+        const descripcionTextarea = document.getElementById('descripcion');
+        const contador = document.getElementById('contador');
+        const maxLength = descripcionTextarea.maxLength;
+
+        function actualizarContador() {
+            const currentLength = descripcionTextarea.value.length;
+            contador.textContent = `${currentLength}/${maxLength}`;
+            if (currentLength > maxLength) {
+                contador.classList.add('text-danger');
+            } else {
+                contador.classList.remove('text-danger');
             }
+        }
+
+        descripcionTextarea.addEventListener('input', actualizarContador);
+
+        descripcionTextarea.addEventListener('paste', function(e) {
+            const pastedText = (e.clipboardData || window.clipboardData).getData('text');
+            const currentLength = descripcionTextarea.value.length;
+            if (currentLength + pastedText.length > maxLength) {
+                e.preventDefault();
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Texto demasiado largo',
+                    text: `No puedes pegar este texto porque excede el límite de ${maxLength} caracteres.`,
+                });
+            }
+        });
+
+        actualizarContador(); // Para inicializarlo al cargar la página
+
+        document.getElementById('createForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const form = this;
+            
+            Swal.fire({
+                title: '¿Guardar libro?',
+                text: "Se agregará un nuevo libro a tu colección",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#198754',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Sí, guardar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
         });
     });
 </script>

@@ -38,6 +38,10 @@ const Autor = sequelize.define('Autor', {
         type: DataTypes.STRING,
         allowNull: false,
         unique: true
+    },
+    fechaCreacion: {
+        type: DataTypes.DATEONLY,
+        allowNull: true
     }
 }, {
     tableName: 'Autores'
@@ -68,6 +72,14 @@ const Libro = sequelize.define('Libro', {
         type: DataTypes.ENUM('Leído', 'Pendiente', 'Leyendo'),
         defaultValue: 'Pendiente'
     },
+    descripcion: {
+        type: DataTypes.STRING(716),
+        allowNull: true
+    },
+    detalle: {
+        type: DataTypes.DATE,
+        defaultValue: Sequelize.NOW
+    },
     urlPortada: {
         type: DataTypes.STRING,
         defaultValue: 'https://via.placeholder.com/150'
@@ -91,12 +103,56 @@ Libro.belongsTo(Genero);
 // 1. Listar todos los libros (Inicio)
 app.get('/', async (req, res) => {
     try {
-        const libros = await Libro.findAll({ include: [Autor, Genero] });
+        const { categoria, estado } = req.query;
+        const whereClause = {};
+
+        if (categoria) {
+            whereClause['$Genero.nombre$'] = categoria;
+        }
+        if (estado) {
+            whereClause.estado = estado;
+        }
+
+        const libros = await Libro.findAll({
+            include: [Autor, Genero],
+            where: whereClause
+        });
+
         const librosPendientes = await Libro.findAll({
             where: { estado: 'Pendiente' },
             include: [Autor, Genero]
         });
-        res.render('inicio', { libros, librosPendientes });
+
+        // Paso 1: Obtener los IDs de los géneros que están actualmente en uso en la tabla Libros
+        const generosEnUso = await Libro.findAll({
+            attributes: [
+                [Sequelize.fn('DISTINCT', Sequelize.col('GeneroId')), 'GeneroId']
+            ],
+            where: {
+                GeneroId: {
+                    [Sequelize.Op.ne]: null
+                }
+            }
+        });
+        const idsDeGenerosEnUso = generosEnUso.map(item => item.GeneroId);
+
+        // Paso 2: Obtener los detalles completos de esos géneros
+        const generos = await Genero.findAll({
+            where: {
+                id: idsDeGenerosEnUso
+            }
+        });
+
+        const totalLibrosEnBiblioteca = await Libro.count();
+
+        res.render('inicio', {
+            libros,
+            librosPendientes,
+            generos,
+            selectedCategoria: categoria,
+            selectedEstado: estado,
+            totalLibrosEnBiblioteca
+        });
     } catch (error) {
         console.error(error);
         res.status(500).send('Error al obtener los libros');
@@ -105,17 +161,24 @@ app.get('/', async (req, res) => {
 
 // 2. Mostrar formulario de creación
 app.get('/crear', (req, res) => {
-    res.render('crear');
+    res.render('crear', { page: 'crear' });
 });
 
 // 3. Crear un nuevo libro (POST)
 app.post('/crear', async (req, res) => {
     try {
-        const { titulo, autor, genero, estado, urlPortada } = req.body;
+        const { titulo, autor, fechaCreacion, descripcion, genero, estado, urlPortada } = req.body;
 
         const [instanciaAutor] = await Autor.findOrCreate({
-            where: { nombre: autor }
+            where: { nombre: autor },
+            defaults: { fechaCreacion: fechaCreacion || null }
         });
+
+        // Si el autor ya existía, actualizamos su fecha de creación si se proporcionó una nueva
+        if (!instanciaAutor.isNewRecord && fechaCreacion) {
+            instanciaAutor.fechaCreacion = fechaCreacion;
+            await instanciaAutor.save();
+        }
 
         let instanciaGenero = null;
         if (genero) {
@@ -128,6 +191,7 @@ app.post('/crear', async (req, res) => {
             titulo,
             estado,
             urlPortada,
+            descripcion,
             AutorId: instanciaAutor.id,
             GeneroId: instanciaGenero ? instanciaGenero.id : null
         });
@@ -146,7 +210,7 @@ app.get('/editar/:id', async (req, res) => {
         if (!libro) {
             return res.status(404).send('Libro no encontrado');
         }
-        res.render('editar', { libro });
+        res.render('editar', { libro, page: 'editar' });
     } catch (error) {
         console.error(error);
         res.status(500).send('Error al obtener el libro');
@@ -156,11 +220,18 @@ app.get('/editar/:id', async (req, res) => {
 // 5. Actualizar un libro (PUT)
 app.put('/editar/:id', async (req, res) => {
     try {
-        const { titulo, autor, genero, estado, urlPortada } = req.body;
+        const { titulo, autor, fechaCreacion, descripcion, genero, estado, urlPortada } = req.body;
 
         const [instanciaAutor] = await Autor.findOrCreate({
-            where: { nombre: autor }
+            where: { nombre: autor },
+            defaults: { fechaCreacion: fechaCreacion || null }
         });
+
+        // Si el autor ya existía, actualizamos su fecha de creación
+        if (fechaCreacion) {
+            instanciaAutor.fechaCreacion = fechaCreacion;
+            await instanciaAutor.save();
+        }
 
         let instanciaGenero = null;
         if (genero) {
@@ -173,6 +244,7 @@ app.put('/editar/:id', async (req, res) => {
             titulo,
             estado,
             urlPortada,
+            descripcion,
             AutorId: instanciaAutor.id,
             GeneroId: instanciaGenero ? instanciaGenero.id : null
         }, {
