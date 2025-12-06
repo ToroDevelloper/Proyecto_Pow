@@ -6,7 +6,7 @@ require('dotenv').config();
 
 // --- CONFIGURACIÓN DE LA APP ---
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PUERTO = process.env.PORT || 3000;
 
 // Middlewares
 app.use(express.urlencoded({ extended: true }));
@@ -14,13 +14,12 @@ app.use(express.json());
 app.use(methodOverride('_method'));
 app.use(express.static(path.join(__dirname, 'src/public')));
 
-// Configuración de Vistas
+// Configuración de Vistas (EJS)
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'src/views'));
 
-
-// --- BASE DE DATOS (MySQL) ---
-const connection = mysql.createConnection({
+// --- CONEXIÓN A LA BASE DE DATOS ---
+const conexion = mysql.createConnection({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
@@ -29,81 +28,69 @@ const connection = mysql.createConnection({
     multipleStatements: true
 });
 
-connection.connect(err => {
-    if (err) {
-        console.error('Error al conectar con la base de datos:', err);
-        return;
+conexion.connect(function(error) {
+    if (error) {
+        throw error;
+    } else {
+        console.log('Conexión a la base de datos exitosa');
     }
-    console.log('Base de datos conectada');
 });
 
+// --- RUTAS DE LA APLICACIÓN ---
 
-// --- RUTAS ---
-
-// 1. Listar todos los libros (Inicio)
-app.get('/', (req, res) => {
+// 1. RUTA PRINCIPAL: Listar todos los libros
+app.get('/', function(req, res) {
     const { categoria, estado } = req.query;
-    let query = `
-        SELECT l.*, a.nombre as autorNombre, g.nombre as generoNombre
-        FROM Libros l
-        LEFT JOIN Autores a ON l.AutorId = a.id
+
+    let consultaLibros = `
+        SELECT l.*, a.nombre as nombreAutor, g.nombre as nombreGenero 
+        FROM Libros l 
+        LEFT JOIN Autores a ON l.AutorId = a.id 
         LEFT JOIN Generos g ON l.GeneroId = g.id
     `;
-    const params = [];
+    const parametros = [];
 
     if (categoria || estado) {
-        query += ' WHERE ';
+        consultaLibros += ' WHERE ';
         if (categoria) {
-            query += 'g.nombre = ?';
-            params.push(categoria);
+            consultaLibros += 'g.nombre = ?';
+            parametros.push(categoria);
         }
         if (estado) {
-            if (categoria) query += ' AND ';
-            query += 'l.estado = ?';
-            params.push(estado);
+            if (categoria) consultaLibros += ' AND ';
+            consultaLibros += 'l.estado = ?';
+            parametros.push(estado);
         }
     }
 
-    connection.query(query, params, (err, libros) => {
-        if (err) {
-            console.error(err);
-            return res.status(500).send('Error al obtener los libros');
-        }
+    conexion.query(consultaLibros, parametros, function(error, libros) {
+        if (error) throw error;
 
-        const queryPendientes = `
-            SELECT l.*, a.nombre as autorNombre, g.nombre as generoNombre
-            FROM Libros l
-            LEFT JOIN Autores a ON l.AutorId = a.id
-            LEFT JOIN Generos g ON l.GeneroId = g.id
+        const consultaPendientes = `
+            SELECT l.*, a.nombre as nombreAutor, g.nombre as nombreGenero 
+            FROM Libros l 
+            LEFT JOIN Autores a ON l.AutorId = a.id 
+            LEFT JOIN Generos g ON l.GeneroId = g.id 
             WHERE l.estado = 'Pendiente'
         `;
-        connection.query(queryPendientes, (err, librosPendientes) => {
-            if (err) {
-                console.error(err);
-                return res.status(500).send('Error al obtener los libros pendientes');
-            }
+        conexion.query(consultaPendientes, function(error, librosPendientes) {
+            if (error) throw error;
 
-            const queryGeneros = 'SELECT * FROM Generos WHERE id IN (SELECT DISTINCT GeneroId FROM Libros WHERE GeneroId IS NOT NULL)';
-            connection.query(queryGeneros, (err, generos) => {
-                if (err) {
-                    console.error(err);
-                    return res.status(500).send('Error al obtener los géneros');
-                }
+            const consultaGeneros = 'SELECT * FROM Generos WHERE id IN (SELECT DISTINCT GeneroId FROM Libros WHERE GeneroId IS NOT NULL)';
+            conexion.query(consultaGeneros, function(error, generos) {
+                if (error) throw error;
 
-                const queryTotal = 'SELECT COUNT(*) as total FROM Libros';
-                connection.query(queryTotal, (err, result) => {
-                    if (err) {
-                        console.error(err);
-                        return res.status(500).send('Error al contar los libros');
-                    }
+                const consultaTotal = 'SELECT COUNT(*) as total FROM Libros';
+                conexion.query(consultaTotal, function(error, resultado) {
+                    if (error) throw error;
 
                     res.render('inicio', {
-                        libros: libros.map(l => ({ ...l, Autor: { nombre: l.autorNombre }, Genero: { nombre: l.generoNombre } })),
-                        librosPendientes: librosPendientes.map(l => ({ ...l, Autor: { nombre: l.autorNombre }, Genero: { nombre: l.generoNombre } })),
+                        libros: libros.map(l => ({ ...l, Autor: { nombre: l.nombreAutor }, Genero: { nombre: l.nombreGenero } })),
+                        librosPendientes: librosPendientes.map(l => ({ ...l, Autor: { nombre: l.nombreAutor }, Genero: { nombre: l.nombreGenero } })),
                         generos,
                         selectedCategoria: categoria,
                         selectedEstado: estado,
-                        totalLibrosEnBiblioteca: result[0].total
+                        totalLibrosEnBiblioteca: resultado[0].total
                     });
                 });
             });
@@ -111,178 +98,125 @@ app.get('/', (req, res) => {
     });
 });
 
-
-// 2. Mostrar formulario de creación
-app.get('/crear', (req, res) => {
+// 2. RUTA: Mostrar formulario para crear un libro
+app.get('/crear', function(req, res) {
     res.render('crear', { page: 'crear' });
 });
 
-// 3. Crear un nuevo libro (POST)
-app.post('/crear', (req, res) => {
+// 3. RUTA: Guardar un nuevo libro en la BD
+app.post('/crear', function(req, res) {
     const { titulo, autor, fechaCreacion, descripcion, genero, estado, urlPortada } = req.body;
 
-    const findOrCreateAutor = `INSERT INTO Autores (nombre, fechaCreacion) VALUES (?, ?) ON DUPLICATE KEY UPDATE fechaCreacion=VALUES(fechaCreacion); SELECT id FROM Autores WHERE nombre = ?;`;
-    connection.query(findOrCreateAutor, [autor, fechaCreacion || null, autor], (err, results) => {
-        if (err) {
-            console.error(err);
-            return res.status(500).send('Error al crear/buscar el autor');
-        }
-        const autorId = results[1][0].id;
+    const consultaAutor = `INSERT INTO Autores (nombre, fechaCreacion) VALUES (?, ?) ON DUPLICATE KEY UPDATE fechaCreacion=VALUES(fechaCreacion); SELECT id FROM Autores WHERE nombre = ?;`;
+    conexion.query(consultaAutor, [autor, fechaCreacion || null, autor], function(error, resultados) {
+        if (error) throw error;
+        const autorId = resultados[1][0].id;
 
         if (genero) {
-            const findOrCreateGenero = `INSERT INTO Generos (nombre) VALUES (?) ON DUPLICATE KEY UPDATE nombre=VALUES(nombre); SELECT id FROM Generos WHERE nombre = ?;`;
-            connection.query(findOrCreateGenero, [genero, genero], (err, results) => {
-                if (err) {
-                    console.error(err);
-                    return res.status(500).send('Error al crear/buscar el género');
-                }
-                const generoId = results[1][0].id;
-                createLibro(titulo, estado, urlPortada, descripcion, autorId, generoId, res);
+            const consultaGenero = `INSERT INTO Generos (nombre) VALUES (?) ON DUPLICATE KEY UPDATE nombre=VALUES(nombre); SELECT id FROM Generos WHERE nombre = ?;`;
+            conexion.query(consultaGenero, [genero, genero], function(error, resultados) {
+                if (error) throw error;
+                const generoId = resultados[1][0].id;
+                crearLibro(titulo, estado, urlPortada, descripcion, autorId, generoId, res);
             });
         } else {
-            createLibro(titulo, estado, urlPortada, descripcion, autorId, null, res);
+            crearLibro(titulo, estado, urlPortada, descripcion, autorId, null, res);
         }
     });
 });
 
-function createLibro(titulo, estado, urlPortada, descripcion, autorId, generoId, res) {
-    const query = 'INSERT INTO Libros (titulo, estado, urlPortada, descripcion, AutorId, GeneroId, detalle) VALUES (?, ?, ?, ?, ?, ?, NOW())';
-    connection.query(query, [titulo, estado, urlPortada, descripcion, autorId, generoId], (err) => {
-        if (err) {
-            console.error(err);
-            return res.status(500).send('Error al crear el libro');
-        }
+function crearLibro(titulo, estado, urlPortada, descripcion, autorId, generoId, res) {
+    const consulta = 'INSERT INTO Libros (titulo, estado, urlPortada, descripcion, AutorId, GeneroId, detalle) VALUES (?, ?, ?, ?, ?, ?, NOW())';
+    conexion.query(consulta, [titulo, estado, urlPortada, descripcion, autorId, generoId], function(error) {
+        if (error) throw error;
         res.redirect('/?alerta=creado');
     });
 }
 
-
-// 4. Mostrar formulario de edición
-app.get('/editar/:id', (req, res) => {
-    const query = `
-        SELECT l.*, a.nombre as autorNombre, g.nombre as generoNombre
-        FROM Libros l
-        LEFT JOIN Autores a ON l.AutorId = a.id
-        LEFT JOIN Generos g ON l.GeneroId = g.id
+// 4. RUTA: Mostrar formulario para editar un libro
+app.get('/editar/:id', function(req, res) {
+    const consulta = `
+        SELECT l.*, a.nombre as nombreAutor, g.nombre as nombreGenero 
+        FROM Libros l 
+        LEFT JOIN Autores a ON l.AutorId = a.id 
+        LEFT JOIN Generos g ON l.GeneroId = g.id 
         WHERE l.id = ?
     `;
-    connection.query(query, [req.params.id], (err, result) => {
-        if (err) {
-            console.error(err);
-            return res.status(500).send('Error al obtener el libro');
-        }
-        if (result.length === 0) {
-            return res.status(404).send('Libro no encontrado');
-        }
-        const libro = { ...result[0], Autor: { nombre: result[0].autorNombre }, Genero: { nombre: result[0].generoNombre } };
+    conexion.query(consulta, [req.params.id], function(error, resultado) {
+        if (error) throw error;
+        const libro = { ...resultado[0], Autor: { nombre: resultado[0].nombreAutor }, Genero: { nombre: resultado[0].nombreGenero } };
         res.render('editar', { libro, page: 'editar' });
     });
 });
 
-
-// 5. Actualizar un libro (PUT)
-app.put('/editar/:id', (req, res) => {
+// 5. RUTA: Actualizar un libro en la BD
+app.put('/editar/:id', function(req, res) {
     const { titulo, autor, fechaCreacion, descripcion, genero, estado, urlPortada } = req.body;
 
-    const findOrCreateAutor = `INSERT INTO Autores (nombre, fechaCreacion) VALUES (?, ?) ON DUPLICATE KEY UPDATE fechaCreacion=VALUES(fechaCreacion); SELECT id FROM Autores WHERE nombre = ?;`;
-    connection.query(findOrCreateAutor, [autor, fechaCreacion || null, autor], (err, results) => {
-        if (err) {
-            console.error(err);
-            return res.status(500).send('Error al actualizar/buscar el autor');
-        }
-        const autorId = results[1][0].id;
+    const consultaAutor = `INSERT INTO Autores (nombre, fechaCreacion) VALUES (?, ?) ON DUPLICATE KEY UPDATE fechaCreacion=VALUES(fechaCreacion); SELECT id FROM Autores WHERE nombre = ?;`;
+    conexion.query(consultaAutor, [autor, fechaCreacion || null, autor], function(error, resultados) {
+        if (error) throw error;
+        const autorId = resultados[1][0].id;
 
         if (genero) {
-            const findOrCreateGenero = `INSERT INTO Generos (nombre) VALUES (?) ON DUPLICATE KEY UPDATE nombre=VALUES(nombre); SELECT id FROM Generos WHERE nombre = ?;`;
-            connection.query(findOrCreateGenero, [genero, genero], (err, results) => {
-                if (err) {
-                    console.error(err);
-                    return res.status(500).send('Error al actualizar/buscar el género');
-                }
-                const generoId = results[1][0].id;
-                updateLibro(req.params.id, titulo, estado, urlPortada, descripcion, autorId, generoId, res);
+            const consultaGenero = `INSERT INTO Generos (nombre) VALUES (?) ON DUPLICATE KEY UPDATE nombre=VALUES(nombre); SELECT id FROM Generos WHERE nombre = ?;`;
+            conexion.query(consultaGenero, [genero, genero], function(error, resultados) {
+                if (error) throw error;
+                const generoId = resultados[1][0].id;
+                actualizarLibro(req.params.id, titulo, estado, urlPortada, descripcion, autorId, generoId, res);
             });
         } else {
-            updateLibro(req.params.id, titulo, estado, urlPortada, descripcion, autorId, null, res);
+            actualizarLibro(req.params.id, titulo, estado, urlPortada, descripcion, autorId, null, res);
         }
     });
 });
 
-function updateLibro(id, titulo, estado, urlPortada, descripcion, autorId, generoId, res) {
-    const query = 'UPDATE Libros SET titulo = ?, estado = ?, urlPortada = ?, descripcion = ?, AutorId = ?, GeneroId = ? WHERE id = ?';
-    connection.query(query, [titulo, estado, urlPortada, descripcion, autorId, generoId, id], (err) => {
-        if (err) {
-            console.error(err);
-            return res.status(500).send('Error al actualizar el libro');
-        }
+function actualizarLibro(id, titulo, estado, urlPortada, descripcion, autorId, generoId, res) {
+    const consulta = 'UPDATE Libros SET titulo = ?, estado = ?, urlPortada = ?, descripcion = ?, AutorId = ?, GeneroId = ? WHERE id = ?';
+    conexion.query(consulta, [titulo, estado, urlPortada, descripcion, autorId, generoId, id], function(error) {
+        if (error) throw error;
         res.redirect('/?alerta=actualizado');
     });
 }
 
-
-// 6. Eliminar un libro (DELETE)
-app.delete('/eliminar/:id', (req, res) => {
-    const query = 'DELETE FROM Libros WHERE id = ?';
-    connection.query(query, [req.params.id], (err) => {
-        if (err) {
-            console.error(err);
-            return res.status(500).send('Error al eliminar el libro');
-        }
+// 6. RUTA: Eliminar un libro de la BD
+app.delete('/eliminar/:id', function(req, res) {
+    const consulta = 'DELETE FROM Libros WHERE id = ?';
+    conexion.query(consulta, [req.params.id], function(error) {
+        if (error) throw error;
         res.redirect('/?alerta=eliminado');
     });
 });
 
-// 7. Vista de Estadísticas Avanzadas
-app.get('/estadisticas', (req, res) => {
+// 7. RUTA: Vista de Estadísticas
+app.get('/estadisticas', function(req, res) {
     const { genero, autor } = req.query;
     
-    let baseQuery = `
-        FROM Libros l
-        LEFT JOIN Autores a ON l.AutorId = a.id
-        LEFT JOIN Generos g ON l.GeneroId = g.id
-    `;
-    const whereClauses = [];
-    const params = [];
+    let consultaBase = `FROM Libros l LEFT JOIN Autores a ON l.AutorId = a.id LEFT JOIN Generos g ON l.GeneroId = g.id`;
+    const clausulasWhere = [];
+    const parametros = [];
 
-    if (autor && autor.trim() !== '') {
-        whereClauses.push('a.nombre = ?');
-        params.push(autor);
-    }
-    if (genero && genero.trim() !== '') {
-        whereClauses.push('g.nombre = ?');
-        params.push(genero);
-    }
+    if (autor) { clausulasWhere.push('a.nombre = ?'); parametros.push(autor); }
+    if (genero) { clausulasWhere.push('g.nombre = ?'); parametros.push(genero); }
+    if (clausulasWhere.length > 0) consultaBase += ' WHERE ' + clausulasWhere.join(' AND ');
 
-    if (whereClauses.length > 0) {
-        baseQuery += ' WHERE ' + whereClauses.join(' AND ');
-    }
+    const consultaTotal = `SELECT COUNT(*) as total ${consultaBase}`;
+    conexion.query(consultaTotal, parametros, function(error, resultadoTotal) {
+        if (error) throw error;
+        const totalLibros = resultadoTotal[0].total;
 
-    const totalQuery = `SELECT COUNT(*) as total ${baseQuery}`;
-    connection.query(totalQuery, params, (err, totalResult) => {
-        if (err) {
-            console.error('Error en estadísticas (total):', err);
-            return res.status(500).send('Error al calcular el total');
-        }
-        const totalLibros = totalResult[0].total;
+        const consultaConteo = `SELECT l.estado, COUNT(l.estado) as conteo ${consultaBase} GROUP BY l.estado`;
+        conexion.query(consultaConteo, parametros, function(error, resultadoConteo) {
+            if (error) throw error;
 
-        const conteoQuery = `SELECT l.estado, COUNT(l.estado) as conteo ${baseQuery} GROUP BY l.estado`;
-        connection.query(conteoQuery, params, (err, conteoResult) => {
-            if (err) {
-                console.error('Error en estadísticas (conteo):', err);
-                return res.status(500).send('Error al calcular el conteo por estado');
-            }
-
-            const estadisticasPorEstado = conteoResult.map(item => ({
-                estado: item.estado,
-                conteo: item.conteo,
+            const estadisticasPorEstado = resultadoConteo.map(item => ({
+                ...item,
                 porcentaje: totalLibros > 0 ? ((item.conteo / totalLibros) * 100).toFixed(1) : 0
             }));
 
-            const todosLosEstados = ['Leído', 'Pendiente', 'Leyendo'];
-            const estadisticasFinales = todosLosEstados.map(estado => {
-                const encontrado = estadisticasPorEstado.find(s => s.estado === estado);
-                return encontrado || { estado: estado, conteo: 0, porcentaje: 0 };
-            });
+            const estadisticasFinales = ['Leído', 'Pendiente', 'Leyendo'].map(estado => 
+                estadisticasPorEstado.find(s => s.estado === estado) || { estado, conteo: 0, porcentaje: 0 }
+            );
 
             res.render('estadisticas', {
                 totalLibros,
@@ -293,8 +227,7 @@ app.get('/estadisticas', (req, res) => {
     });
 });
 
-
 // --- INICIO DEL SERVIDOR ---
-app.listen(PORT, () => {
-    console.log(`Servidor corriendo en http://localhost:${PORT}`);
+app.listen(PUERTO, function() {
+    console.log(`Servidor corriendo en http://localhost:${PUERTO}`);
 });
