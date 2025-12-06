@@ -2,11 +2,6 @@
 CREATE DATABASE IF NOT EXISTS biblioteca_personal_db;
 USE biblioteca_personal_db;
 
--- Borrar tablas en orden inverso para evitar problemas de claves foráneas
-DROP TABLE IF EXISTS Libros;
-DROP TABLE IF EXISTS Autores;
-DROP TABLE IF EXISTS Generos;
-
 -- Tabla de Autores
 CREATE TABLE Autores (
     id INT AUTO_INCREMENT PRIMARY KEY,
