@@ -2,11 +2,10 @@ const express = require('express');
 const path = require('path');
 const methodOverride = require('method-override');
 const mysql = require('mysql');
-require('dotenv').config();
 
 // --- CONFIGURACIÓN DE LA APP ---
 const app = express();
-const PUERTO = process.env.PORT || 3000;
+const PUERTO = 3000;
 
 // Middlewares
 app.use(express.urlencoded({ extended: true }));
@@ -18,13 +17,14 @@ app.use(express.static(path.join(__dirname, 'src/public')));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'src/views'));
 
+
 // --- CONEXIÓN A LA BASE DE DATOS ---
 const conexion = mysql.createConnection({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-    port: process.env.DB_PORT,
+    host: "localhost",
+    database: "biblioteca_personal_db",
+    user: "root",
+    password: "",
+    port: 3307,
     multipleStatements: true
 });
 
