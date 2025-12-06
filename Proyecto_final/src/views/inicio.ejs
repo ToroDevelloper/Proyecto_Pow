@@ -1,6 +1,6 @@
 <%- include('partials/encabezado') %>
 
-<!-- Encabezado principal elegante -->
+<!-- Encabezado principal -->
 <div class="header-section mb-5">
     <div class="row align-items-center">
         <div class="col">
@@ -11,63 +11,9 @@
 </div>
 
 <!-- Carrusel de Libros Pendientes -->
-<% if (librosPendientes && librosPendientes.length > 0) { %>
-<div class="card card-featured mb-5 shadow">
-    <div class="card-header card-header-featured">
-        <div class="d-flex align-items-center">
-            <div class="featured-icon me-3">
-                <i class="fas fa-hourglass-half"></i>
-            </div>
-            <div>
-                <h5 class="mb-0">Lecturas Pendientes</h5>
-                <small class="text-light-secondary">Continúa donde lo dejaste</small>
-            </div>
-        </div>
-    </div>
-    <div class="card-body carousel-section">
-        <div id="pendingBooksCarousel" class="carousel slide carousel-enhanced" data-bs-ride="carousel" data-bs-interval="8000">
-            <div class="carousel-inner">
-                <% librosPendientes.forEach((libro, index) => { %>
-                    <div class="carousel-item <%= index === 0 ? 'active' : '' %> book-details-trigger"
-                         data-bs-toggle="modal"
-                         data-bs-target="#bookDetailsModal"
-                         data-book-details='<%- JSON.stringify(libro) %>'>
-                        <div class="carousel-content">
-                            <div class="carousel-image">
-                                <img src="<%= libro.urlPortada %>" class="carousel-book-img" alt="<%= libro.titulo %>" style="height: 320px; object-fit: cover; border-radius: 12px; box-shadow: 0 10px 35px rgba(52, 152, 219, 0.25);">
-                            </div>
-                            <div class="carousel-details">
-                                <div class="carousel-badge">
-                                    <span class="badge badge-pendiente"><i class="fas fa-star me-1"></i>Pendiente de leer</span>
-                                </div>
-                                <h3 class="carousel-title"><%= libro.titulo %></h3>
-                                <p class="carousel-author">
-                                    <i class="fas fa-user me-2"></i><strong><%= libro.Autor ? libro.Autor.nombre : 'Autor Desconocido' %></strong>
-                                </p>
-                                <p class="carousel-genre">
-                                    <i class="fas fa-book me-2"></i><%= libro.Genero ? libro.Genero.nombre : 'Sin género' %>
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                <% }) %>
-            </div>
-            <% if (librosPendientes.length > 1) { %>
-                <button class="carousel-control-prev carousel-control-custom" type="button" data-bs-target="#pendingBooksCarousel" data-bs-slide="prev">
-                    <i class="fas fa-chevron-left"></i>
-                    <span class="visually-hidden">Anterior</span>
-                </button>
-                <button class="carousel-control-next carousel-control-custom" type="button" data-bs-target="#pendingBooksCarousel" data-bs-slide="next">
-                    <i class="fas fa-chevron-right"></i>
-                    <span class="visually-hidden">Siguiente</span>
-                </button>
-            <% } %>
-        </div>
-    </div>
-</div>
-<% } %>
+<%- include('partials/carruselPendientes') %>
 
-<!-- Sección de libros -->
+<!-- Sección de la biblioteca -->
 <% if (totalLibrosEnBiblioteca === 0) { %>
     <div class="empty-state-container">
         <div class="empty-state">
@@ -80,87 +26,8 @@
         </div>
     </div>
 <% } else { %>
-    <div class="library-header mb-4">
-        <h6 class="library-title">
-            <div class="dropdown d-inline-block">
-                <a href="#" role="button" id="filterDropdownIcon" data-bs-toggle="dropdown" aria-expanded="false" class="filter-icon-trigger">
-                    <i class="fas fa-list me-2"></i>
-                </a>
-                <ul class="dropdown-menu" aria-labelledby="filterDropdownIcon">
-                    <li><h6 class="dropdown-header">Por Categoría</h6></li>
-                    <li><a class="dropdown-item <%= !selectedCategoria ? 'active' : '' %>" href="/">Todas</a></li>
-                    <% generos.forEach(genero => { %>
-                        <li><a class="dropdown-item <%= selectedCategoria === genero.nombre ? 'active' : '' %>" href="/?categoria=<%= genero.nombre %>"><%= genero.nombre %></a></li>
-                    <% }) %>
-                    <li><hr class="dropdown-divider"></li>
-                    <li><h6 class="dropdown-header">Por Estado</h6></li>
-                    <li><a class="dropdown-item <%= !selectedEstado ? 'active' : '' %>" href="/">Todos</a></li>
-                    <li><a class="dropdown-item <%= selectedEstado === 'Leído' ? 'active' : '' %>" href="/?estado=Leído">Leído</a></li>
-                    <li><a class="dropdown-item <%= selectedEstado === 'Leyendo' ? 'active' : '' %>" href="/?estado=Leyendo">Leyendo</a></li>
-                    <li><a class="dropdown-item <%= selectedEstado === 'Pendiente' ? 'active' : '' %>" href="/?estado=Pendiente">Pendiente</a></li>
-                </ul>
-            </div>
-            Todos los libros
-            <span class="badge badge-count"><%= libros.length %></span>
-        </h6>
-    </div>
-
-    <% if (libros.length === 0) { %>
-        <div class="empty-state-container-small">
-            <div class="empty-state-small">
-                <i class="fas fa-search-minus"></i>
-                <h4>No se encontraron libros</h4>
-                <p>No hay libros que coincidan con los filtros seleccionados. Intenta con otra categoría o estado.</p>
-            </div>
-        </div>
-    <% } else { %>
-        <div class="row row-cols-2 row-cols-md-3 row-cols-lg-5 g-4">
-            <% libros.forEach(libro => { %>
-                <div class="col">
-                    <div class="card h-100 shadow-sm book-card book-card-elegant">
-                        <div class="card-img-wrapper book-details-trigger" 
-                             data-bs-toggle="modal" 
-                             data-bs-target="#bookDetailsModal" 
-                             data-book-details='<%- JSON.stringify(libro) %>'>
-                            <img src="<%= libro.urlPortada %>" class="card-img-top" alt="<%= libro.titulo %>">
-                        </div>
-                        <div class="card-img-overlay d-flex align-items-end">
-                            <div class="book-actions w-100">
-                                <a href="/editar/<%= libro.id %>" class="btn btn-icon-elegant me-2" title="Editar"><i class="fas fa-edit"></i></a>
-                                <form action="/eliminar/<%= libro.id %>?_method=DELETE" method="POST" class="d-inline delete-form" onsubmit="return confirmDelete(event, this);">
-                                    <button type="submit" class="btn btn-icon-danger" title="Eliminar"><i class="fas fa-trash"></i></button>
-                                </form>
-                            </div>
-                        </div>
-                        <div class="card-body p-3 book-details-trigger"
-                             data-bs-toggle="modal" 
-                             data-bs-target="#bookDetailsModal" 
-                             data-book-details='<%- JSON.stringify(libro) %>'>
-                            <h6 class="card-title text-truncate" title="<%= libro.titulo %>"><%= libro.titulo %></h6>
-                            <p class="card-subtitle mb-3 text-muted text-truncate small"><%= libro.Autor ? libro.Autor.nombre : 'Desconocido' %></p>
-                            
-                            <div class="mb-3">
-                                <span class="badge badge-genre"><%= libro.Genero ? libro.Genero.nombre : 'Sin género' %></span>
-                            </div>
-                            
-                            <div>
-                                <% if(libro.estado === 'Leído') { %>
-                                    <span class="badge badge-estado badge-leido w-100"><i class="fas fa-check me-1"></i>Leído</span>
-                                <% } else if(libro.estado === 'Leyendo') { %>
-                                    <span class="badge badge-estado badge-leyendo w-100"><i class="fas fa-book-open me-1"></i>Leyendo</span>
-                                <% } else { %>
-                                    <span class="badge badge-estado badge-pendiente w-100"><i class="fas fa-clock me-1"></i>Pendiente</span>
-                                <% } %>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            <% }) %>
-        </div>
-    <% } %>
+    <%- include('partials/catalogoLibros') %>
 <% } %>
-
-<%- include('partials/pie') %>
 
 <!-- Modal de Detalles del Libro -->
 <div class="modal fade" id="bookDetailsModal" tabindex="-1" aria-labelledby="bookDetailsModalLabel" aria-hidden="true">
@@ -197,7 +64,7 @@
             </div>
             <div class="modal-footer d-flex justify-content-center gap-3">
                 <a id="modalEditButton" href="#" class="btn btn-icon-elegant" title="Editar"><i class="fas fa-edit"></i></a>
-                <form id="modalDeleteForm" action="#" method="POST" class="d-inline" onsubmit="return confirmDelete(event, this);">
+                <form id="modalDeleteForm" action="#" method="POST" class="d-inline delete-form">
                     <input type="hidden" name="_method" value="DELETE">
                     <button type="submit" class="btn btn-icon-danger" title="Eliminar"><i class="fas fa-trash"></i></button>
                 </form>
@@ -206,168 +73,7 @@
     </div>
 </div>
 
+<%- include('partials/pie') %>
 
-<script>
-    // Función para confirmar eliminación
-    function confirmDelete(event, form) {
-        event.preventDefault();
-        Swal.fire({
-            title: '¿Estás seguro?',
-            text: "No podrás revertir esta acción",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#e74c3c',
-            cancelButtonColor: '#3498db',
-            confirmButtonText: 'Sí, borrar',
-            cancelButtonText: 'Cancelar'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                form.submit();
-            }
-        });
-    }
-
-    document.addEventListener('DOMContentLoaded', function() {
-        // --- LÓGICA DE BÚSQUEDA Y FILTRADO EN TIEMPO REAL ---
-        const searchInput = document.getElementById('searchBooks');
-        const bookCardsContainer = document.querySelector('.row.g-4');
-        const allBookCards = bookCardsContainer ? Array.from(bookCardsContainer.children) : [];
-        const badgeCount = document.querySelector('.badge-count');
-        const emptyStateSmall = document.querySelector('.empty-state-container-small');
-
-        function performSearch() {
-            const searchTerm = searchInput.value.toLowerCase();
-            let visibleBooksCount = 0;
-
-            allBookCards.forEach(card => {
-                const title = card.querySelector('.card-title').textContent.toLowerCase();
-                const author = card.querySelector('.card-subtitle').textContent.toLowerCase();
-                const genre = card.querySelector('.badge-genre').textContent.toLowerCase();
-                
-                const matchesSearch = title.includes(searchTerm) || author.includes(searchTerm) || genre.includes(searchTerm);
-
-                if (matchesSearch) {
-                    card.style.display = 'block';
-                    visibleBooksCount++;
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-
-            if (badgeCount) {
-                badgeCount.textContent = visibleBooksCount;
-            }
-
-            if (emptyStateSmall) {
-                const shouldShowEmptyState = visibleBooksCount === 0 && allBookCards.length > 0;
-                emptyStateSmall.style.display = shouldShowEmptyState ? 'flex' : 'none';
-                if (bookCardsContainer) {
-                    bookCardsContainer.style.display = shouldShowEmptyState ? 'none' : 'flex';
-                }
-            }
-        }
-
-        if (searchInput) {
-            searchInput.addEventListener('input', () => {
-                const url = new URL(window.location);
-                const params = url.searchParams;
-
-                // Si hay un filtro de categoría o estado, recargamos la página para resetearlos
-                if (params.has('categoria') || params.has('estado')) {
-                    // Creamos una nueva URL limpia y añadimos el término de búsqueda
-                    const newUrl = new URL(window.location.origin);
-                    newUrl.searchParams.set('q', searchInput.value);
-                    window.location.href = newUrl.toString();
-                } else {
-                    // Si no hay filtros, buscamos en el cliente
-                    performSearch();
-                }
-            });
-        }
-
-        // Al cargar la página, comprobamos si viene de una recarga con término de búsqueda
-        const initialUrlParams = new URLSearchParams(window.location.search);
-        const initialSearchQuery = initialUrlParams.get('q');
-        if (initialSearchQuery && searchInput) {
-            searchInput.value = initialSearchQuery;
-            searchInput.focus(); // Pone el cursor en el campo de búsqueda
-            performSearch();
-            // Limpiamos la URL para que el usuario no vea el parámetro 'q'
-            window.history.replaceState({}, document.title, "/");
-        }
-
-        // --- LÓGICA PARA EL MODAL DE DETALLES ---
-        const bookDetailsModal = document.getElementById('bookDetailsModal');
-        if (bookDetailsModal) {
-            bookDetailsModal.addEventListener('show.bs.modal', function (event) {
-                const triggerElement = event.relatedTarget;
-                const bookDetails = JSON.parse(triggerElement.getAttribute('data-book-details'));
-
-                const modalTitle = bookDetailsModal.querySelector('.modal-title');
-                const modalCover = bookDetailsModal.querySelector('#modalBookCover');
-                const modalAuthor = bookDetailsModal.querySelector('#modalBookAuthor');
-                const modalDescription = bookDetailsModal.querySelector('#modalBookDescription');
-                const modalState = bookDetailsModal.querySelector('#modalBookState');
-                const modalGenre = bookDetailsModal.querySelector('#modalBookGenre');
-                const modalAuthorCreation = bookDetailsModal.querySelector('#modalAuthorCreation');
-                const modalBookAdded = bookDetailsModal.querySelector('#modalBookAdded');
-                const modalEditButton = bookDetailsModal.querySelector('#modalEditButton');
-                const modalDeleteForm = bookDetailsModal.querySelector('#modalDeleteForm');
-
-                modalTitle.textContent = bookDetails.titulo;
-                modalCover.src = bookDetails.urlPortada;
-                modalAuthor.textContent = bookDetails.Autor ? bookDetails.Autor.nombre : 'Desconocido';
-                
-                const descripcionTexto = bookDetails.descripcion || 'No hay descripción disponible.';
-                modalDescription.innerHTML = descripcionTexto.replace(/\n/g, '<br>');
-
-                modalState.textContent = bookDetails.estado;
-                modalState.className = `badge badge-estado badge-${bookDetails.estado.toLowerCase()} w-auto`;
-                modalGenre.textContent = bookDetails.Genero ? bookDetails.Genero.nombre : 'Sin género';
-
-                modalAuthorCreation.textContent = bookDetails.Autor && bookDetails.Autor.fechaCreacion ? new Date(bookDetails.Autor.fechaCreacion).toLocaleDateString() : 'No especificada';
-                modalBookAdded.textContent = bookDetails.detalle ? new Date(bookDetails.detalle).toLocaleDateString() : 'No especificada';
-
-                modalEditButton.href = `/editar/${bookDetails.id}`;
-                modalDeleteForm.action = `/eliminar/${bookDetails.id}?_method=DELETE`;
-            });
-        }
-
-        // --- DETECTAR PARÁMETROS DE URL PARA ALERTAS ---
-        const urlParams = new URLSearchParams(window.location.search);
-        const alertType = urlParams.get('alerta');
-
-        if (alertType) {
-            let title, text, icon;
-            
-            switch(alertType) {
-                case 'creado':
-                    title = '¡Creado!';
-                    text = 'El libro ha sido agregado correctamente.';
-                    icon = 'success';
-                    break;
-                case 'actualizado':
-                    title = '¡Actualizado!';
-                    text = 'El libro ha sido actualizado correctamente.';
-                    icon = 'success';
-                    break;
-                case 'eliminado':
-                    title = '¡Eliminado!';
-                    text = 'El libro ha sido eliminado correctamente.';
-                    icon = 'success';
-                    break;
-            }
-
-            if (title) {
-                Swal.fire({
-                    title: title,
-                    text: text,
-                    icon: icon,
-                    timer: 3000,
-                    showConfirmButton: false
-                });
-                window.history.replaceState({}, document.title, "/");
-            }
-        }
-    });
-</script>
+<!-- Script específico de la página -->
+<script src="/js/inicio.js"></script>

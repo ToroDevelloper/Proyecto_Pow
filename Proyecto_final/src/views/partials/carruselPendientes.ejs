@@ -1,0 +1,47 @@
+<% if (librosPendientes && librosPendientes.length > 0) { %>
+<div class="card card-featured mb-5 shadow">
+    <div class="card-header card-header-featured">
+        <div class="d-flex align-items-center">
+            <div class="featured-icon me-3"><i class="fas fa-hourglass-half"></i></div>
+            <div>
+                <h5 class="mb-0">Lecturas Pendientes</h5>
+                <small class="text-light-secondary">Continúa donde lo dejaste</small>
+            </div>
+        </div>
+    </div>
+    <div class="card-body carousel-section">
+        <div id="pendingBooksCarousel" class="carousel slide carousel-enhanced" data-bs-ride="carousel" data-bs-interval="8000">
+            <div class="carousel-inner">
+                <% librosPendientes.forEach((libro, index) => { %>
+                    <div class="carousel-item <%= index === 0 ? 'active' : '' %> book-details-trigger"
+                         data-bs-toggle="modal"
+                         data-bs-target="#bookDetailsModal"
+                         data-book-details='<%- JSON.stringify(libro) %>'>
+                        <div class="carousel-content">
+                            <div class="carousel-image">
+                                <img src="<%= libro.urlPortada %>" class="carousel-book-img" alt="<%= libro.titulo %>">
+                            </div>
+                            <div class="carousel-details">
+                                <div class="carousel-badge">
+                                    <span class="badge badge-pendiente"><i class="fas fa-star me-1"></i>Pendiente de leer</span>
+                                </div>
+                                <h3 class="carousel-title"><%= libro.titulo %></h3>
+                                <p class="carousel-author"><i class="fas fa-user me-2"></i><strong><%= libro.Autor ? libro.Autor.nombre : 'Autor Desconocido' %></strong></p>
+                                <p class="carousel-genre"><i class="fas fa-book me-2"></i><%= libro.Genero ? libro.Genero.nombre : 'Sin género' %></p>
+                            </div>
+                        </div>
+                    </div>
+                <% }) %>
+            </div>
+            <% if (librosPendientes.length > 1) { %>
+                <button class="carousel-control-prev carousel-control-custom" type="button" data-bs-target="#pendingBooksCarousel" data-bs-slide="prev">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <button class="carousel-control-next carousel-control-custom" type="button" data-bs-target="#pendingBooksCarousel" data-bs-slide="next">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            <% } %>
+        </div>
+    </div>
+</div>
+<% } %>
